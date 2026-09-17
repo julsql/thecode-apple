@@ -36,11 +36,17 @@ struct MainView: View {
     @State private var generatedValue: String = ""
     @State private var securityLabel: String = ""
     @State private var securityColor: Color = .primary
+    /// Brouillon de saisie du champ longueur. Nécessaire car un binding qui
+    /// n'accepte que des valeurs déjà valides rend le champ inutilisable :
+    /// taper « 30 » commence par « 3 », rejeté, donc le champ revenait
+    /// aussitôt à sa valeur précédente.
+    @State private var lengthDraft: String = String(PasswordSettings.defaultLength)
+    @FocusState private var lengthFieldFocused: Bool
     @State private var showRealKey: Bool = false
     // Auth biométrique valide pour la session : autorise l'édition de la
     // clé (en mode masqué ou révélé) ET la génération de mots de passe.
-    // Persiste tant que le process est vivant ; reset implicite si l'app
-    // est tuée (le @State part avec elle).
+    // L'état réel de référence est `SessionLock` (horodatage persistant) : ce
+    // @State n'en est que le reflet, réévalué à chaque activation de l'app.
     @State private var unlocked: Bool = false
 
     // UI
@@ -96,18 +102,16 @@ struct MainView: View {
                             Slider(value: Binding(
                                 get: { Double(lengthNumber) },
                                 set: { lengthNumber = Int($0) }
-                            ), in: 4...40, step: 1)
+                            ),
+                            in: Double(PasswordSettings.minLength)...Double(PasswordSettings.maxLength),
+                            step: 1)
 
-                            TextField("", text: Binding(
-                                get: { String(lengthNumber) },
-                                set: { newVal in
-                                    if let val = Int(newVal), (4...40).contains(val) {
-                                        lengthNumber = val
-                                    }
-                                }
-                            ))
-                            .frame(width: 50)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("", text: $lengthDraft)
+                                .frame(width: 50)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .multilineTextAlignment(.center)
+                                .focused($lengthFieldFocused)
+                                .onSubmit { commitLengthDraft() }
                         }
                     }
 
@@ -173,22 +177,39 @@ struct MainView: View {
         .preferredColorScheme(preferredScheme)
         .onAppear {
             applyAppAppearance()
+            restoreSession()
+            lengthDraft = String(lengthNumber)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-            // Dès qu'on bascule sur une autre app, on verrouille tout :
-            // re-masquage de la clé pour qu'elle ne reste pas en clair
-            // dans une fenêtre visible en arrière-plan, révocation de la
-            // session d'auth pour forcer une ré-auth au retour, et
-            // nettoyage du nom de site et du mot de passe généré pour
-            // ne pas réafficher de données obsolètes après ré-auth.
+            // Dès qu'on bascule sur une autre app : re-masquage de la clé
+            // pour qu'elle ne reste pas en clair dans une fenêtre visible en
+            // arrière-plan, et effacement du mot de passe affiché. La session
+            // d'auth n'est plus révoquée : on ré-horodate la fenêtre de grâce
+            // pour qu'elle courre à partir de maintenant.
             showRealKey = false
-            unlocked = false
-            siteName = ""
             generatedValue = ""
+            if unlocked { SessionLock.stamp() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            restoreSession()
         }
         .onChange(of: darkMode) { _ in applyAppAppearance() }
         .onChange(of: encodingKey) { _ in generatePassword() }
-        .onChange(of: lengthNumber) { _ in generatePassword() }
+        .onChange(of: lengthNumber) { newVal in
+            // Le slider (ou un clamp) a bougé la valeur : on réaligne le champ.
+            if lengthDraft != String(newVal) { lengthDraft = String(newVal) }
+            generatePassword()
+        }
+        .onChange(of: lengthDraft) { newVal in
+            // Saisie complète et dans les bornes → appliquée immédiatement.
+            if let val = Int(newVal), PasswordSettings.lengthRange.contains(val) {
+                lengthNumber = val
+            }
+        }
+        // Valide la saisie partielle ou hors bornes à la perte du focus.
+        .onChange(of: lengthFieldFocused) { focused in
+            if !focused { commitLengthDraft() }
+        }
         .onChange(of: minState) { _ in generatePassword() }
         .onChange(of: majState) { _ in generatePassword() }
         .onChange(of: symState) { _ in generatePassword() }
@@ -317,9 +338,37 @@ struct MainView: View {
         context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
                                localizedReason: reason) { success, _ in
             DispatchQueue.main.async {
-                if success { unlocked = true }
+                if success {
+                    SessionLock.stamp()
+                    unlocked = true
+                }
             }
         }
+    }
+
+    /// Réévalue la session à chaque activation : si la fenêtre de grâce court
+    /// toujours on reste déverrouillé (et on régénère l'affichage effacé au
+    /// passage en arrière-plan), sinon on repart d'un écran verrouillé propre.
+    private func restoreSession() {
+        if SessionLock.isValid {
+            SessionLock.stamp()
+            unlocked = true
+            generatePassword()
+        } else {
+            SessionLock.invalidate()
+            unlocked = false
+            showRealKey = false
+            siteName = ""
+            generatedValue = ""
+        }
+    }
+
+    /// Valide le brouillon : une saisie vide, partielle ou hors bornes est
+    /// ramenée dans les limites plutôt que silencieusement ignorée.
+    private func commitLengthDraft() {
+        let clamped = PasswordSettings.clampLength(Int(lengthDraft) ?? lengthNumber)
+        lengthNumber = clamped
+        lengthDraft = String(clamped)
     }
 
     private func generatePassword() {

@@ -31,7 +31,9 @@ class ViewController: NSViewController {
         guard let defaults = UserDefaults(suiteName: appGroupID) else { return }
 
         if defaults.string(forKey: "encodingKey") == nil { defaults.set("", forKey: "encodingKey") }
-        if defaults.object(forKey: "lengthNumber") == nil { defaults.set(20, forKey: "lengthNumber") }
+        if defaults.object(forKey: "lengthNumber") == nil {
+            defaults.set(PasswordSettings.defaultLength, forKey: "lengthNumber")
+        }
         if defaults.object(forKey: "minState") == nil { defaults.set(true, forKey: "minState") }
         if defaults.object(forKey: "majState") == nil { defaults.set(true, forKey: "majState") }
         if defaults.object(forKey: "symState") == nil { defaults.set(true, forKey: "symState") }

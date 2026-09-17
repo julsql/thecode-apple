@@ -44,7 +44,7 @@ func initializeSharedDefaults() {
         defaults.set("", forKey: "encodingKey")
     }
     if defaults.object(forKey: "lengthNumber") == nil {
-        defaults.set(20, forKey: "lengthNumber")
+        defaults.set(PasswordSettings.defaultLength, forKey: "lengthNumber")
     }
     if defaults.object(forKey: "minState") == nil {
         defaults.set(true, forKey: "minState")

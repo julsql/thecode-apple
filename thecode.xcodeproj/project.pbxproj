@@ -11,6 +11,7 @@
 		1BC64853B2E394E9FE3708E8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B47A588570C392E2CFDD3F7 /* ContentView.swift */; };
 		2EFECB15B95A513696E27FBB /* DomainNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EAAE6AA6683F10E22E19FC0 /* DomainNormalizer.swift */; };
 		35851FAD8C1F458ED7B63B6B /* PasswordUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD6AAF5E425C082A00D6DD0B /* PasswordUtils.swift */; };
+		6D9A11022F010002000A0002 /* PasswordSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9A11012F010001000A0001 /* PasswordSettings.swift */; };
 		40CDF0416C3D59696C73705C /* CredentialProviderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165004A8F0E412CE5515FAD9 /* CredentialProviderViewController.swift */; };
 		6D47B00C2EDC7C4A00AF712A /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D47AFF62EDC7B9300AF712A /* AuthenticationServices.framework */; };
 		6D47B0172EDC7C4A00AF712A /* thecode-autofill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 6D47B00B2EDC7C4A00AF712A /* thecode-autofill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -112,6 +113,7 @@
 		A431C23B9087903EAC8625D1 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/AuthenticationServices.framework; sourceTree = DEVELOPER_DIR; };
 		AF9729C1A6F2284AB1BEC13B /* AutofillModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutofillModel.swift; sourceTree = "<group>"; };
 		BD6AAF5E425C082A00D6DD0B /* PasswordUtils.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PasswordUtils.swift; sourceTree = "<group>"; };
+		6D9A11012F010001000A0001 /* PasswordSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PasswordSettings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -324,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				BD6AAF5E425C082A00D6DD0B /* PasswordUtils.swift */,
+				6D9A11012F010001000A0001 /* PasswordSettings.swift */,
 				6563939875087D60FD6A6802 /* Swift-Big-Number-Core.swift */,
 			);
 			name = "Shared (macos-autofill)";
@@ -685,6 +688,7 @@
 				1BC64853B2E394E9FE3708E8 /* ContentView.swift in Sources */,
 				CFB0B64C121707C8FAF95E20 /* DomainNormalizer.swift in Sources */,
 				35851FAD8C1F458ED7B63B6B /* PasswordUtils.swift in Sources */,
+				6D9A11022F010002000A0002 /* PasswordSettings.swift in Sources */,
 				8082053F89E82DB40A9C1DDD /* Swift-Big-Number-Core.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

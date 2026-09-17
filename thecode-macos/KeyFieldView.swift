@@ -104,6 +104,7 @@ struct KeyFieldView: View {
                                localizedReason: reason) { success, _ in
             DispatchQueue.main.async {
                 guard success else { return }
+                SessionLock.stamp()
                 unlocked = true
                 if reveal {
                     showRealKey = true
