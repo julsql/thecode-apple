@@ -135,25 +135,23 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
 
     private func generatePassword(domainName: String) -> String {
         let defaults = UserDefaults(suiteName: appGroupID)
-        let minState     = defaults?.bool(forKey: "minState")     ?? true
-        let majState     = defaults?.bool(forKey: "majState")     ?? true
-        let symState     = defaults?.bool(forKey: "symState")     ?? true
-        let chiState     = defaults?.bool(forKey: "chiState")     ?? true
-        let lengthNumber = defaults?.integer(forKey: "lengthNumber") ?? 20
-        let encodingKey  = defaults?.string(forKey: "encodingKey")   ?? ""
+        // Lecture centralisée (cf. PasswordSettings) : une clé jamais écrite
+        // prend sa valeur par défaut. Avant, `integer(forKey:)` renvoyait 0
+        // pour une longueur absente — et `?? 20` ne s'appliquait jamais, car
+        // `integer(forKey:)` ne renvoie pas nil.
+        let settings = PasswordSettings.load(from: defaults)
+        let encodingKey = defaults?.string(forKey: PasswordSettings.Key.encodingKey) ?? ""
 
-        if domainName.isEmpty
-            || encodingKey.isEmpty
-            || (!minState && !majState && !symState && !chiState) {
+        if domainName.isEmpty || encodingKey.isEmpty || !settings.hasCharset {
             return ""
         }
 
         let utils = PasswordUtils()
-        utils.minState = minState
-        utils.majState = majState
-        utils.symState = symState
-        utils.chiState = chiState
-        utils.longueur = lengthNumber
+        utils.minState = settings.minState
+        utils.majState = settings.majState
+        utils.symState = settings.symState
+        utils.chiState = settings.chiState
+        utils.longueur = settings.length
 
         return utils.generatePassword(input: domainName + encodingKey).code
     }
